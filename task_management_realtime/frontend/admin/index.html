@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Quản Lý Tác Vụ</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script>
+        // Kiểm tra quyền truy cập ngay khi trang load
+        (function() {
+            const userRole = localStorage.getItem('user_role');
+            if (!userRole || userRole !== 'admin') {
+                alert('Bạn không có quyền truy cập trang admin!');
+                window.location.href = userRole === 'member' ? '/frontend/member/index.html' : '/frontend/index.html';
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div id="layout-header"></div>
+    <div id="layout-sidebar"></div>
+    <div class="admin-container">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-crown"></i> Admin Dashboard</h1>
+                <p>Quản lý tác vụ và người dùng hệ thống</p>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <!-- tạo các thẻ stats để hiển thị thống kê -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalTasks">0</h3>
+                        <p>Tổng tác vụ</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pendingTasks">0</h3>
+                        <p>Đang chờ</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon done">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="completedTasks">0</h3>
+                        <p>Hoàn thành</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Người dùng</p>
+                    </div>
+                </div>
+            </div>
+            <!-- tạo thẻ task để hiển thị form tạo tác vụ -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> Tạo Tác Vụ Mới</h2>
+                </div>
+                <form id="taskForm" class="task-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="title">
+                                <i class="fas fa-heading"></i> Tiêu đề
+                            </label>
+                            <input type="text" id="title" placeholder="Nhập tiêu đề tác vụ" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">
+                                <i class="fas fa-align-left"></i> Mô tả
+                            </label>
+                            <textarea id="description" placeholder="Nhập mô tả chi tiết" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="deadline">
+                                <i class="fas fa-calendar-alt"></i> Deadline
+                            </label>
+                            <input type="date" id="deadline" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="assigned_to">
+                                <i class="fas fa-user"></i> Giao cho
+                            </label>
+                            <select id="assigned_to" required>
+                                <option value="">Chọn người dùng</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i> Tạo Tác Vụ
+                        </button>
+                        <button type="reset" class="btn-secondary">
+                            <i class="fas fa-undo"></i> Làm Mới
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <!-- tạo thẻ tasks để hiển thị danh sách tác vụ -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> Danh Sách Tác Vụ</h2>
+                    <div class="card-actions">
+                        <button onclick="fetchTasks()" class="btn-refresh">
+                            <i class="fas fa-sync-alt"></i> Làm mới
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tasksTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-heading"></i> Tiêu đề</th>
+                                <th><i class="fas fa-align-left"></i> Mô tả</th>
+                                <th><i class="fas fa-user"></i> Người nhận</th>
+                                <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                                <th><i class="fas fa-calendar"></i> Deadline</th>
+                                <th><i class="fas fa-cogs"></i> Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- tác vụ sẽ được tải về ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Hàm load layout.html và chèn layout vào các div tương ứng
+        async function loadLayout() {
+            const response = await fetch('layout.html');
+            const layoutText = await response.text();
+            const temp = document.createElement('div');
+            temp.innerHTML = layoutText;
+            // Chèn nav.top-navbar vào #layout-header
+            const nav = temp.querySelector('.top-navbar');
+            if (nav) document.getElementById('layout-header').appendChild(nav);
+            // Chèn div.sidebar vào #layout-sidebar
+            const sidebar = temp.querySelector('.sidebar');
+            if (sidebar) document.getElementById('layout-sidebar').appendChild(sidebar);
+            // Cập nhật tên người dùng nếu có
+            const username = localStorage.getItem('username') || 'Admin';
+            const navUsername = document.getElementById('navUsername');
+            const menuUsername = document.getElementById('menuUsername');
+            const sidebarUsername = document.getElementById('sidebarUsername');
+            if (navUsername) navUsername.textContent = username;
+            if (menuUsername) menuUsername.textContent = username;
+            if (sidebarUsername) sidebarUsername.textContent = username;
+        }
+        window.addEventListener('DOMContentLoaded', loadLayout);
+    </script>
+    <script src="../app.js"></script>
+</body>
+</html> 
