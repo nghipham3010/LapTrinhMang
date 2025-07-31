@@ -43,8 +43,9 @@ class Notification:
         self.created_at = created_at
 
 class Report:
-    def __init__(self, report_id, user_id, content, created_at):
+    def __init__(self, report_id, report_type, user_id, content, created_at):
         self.report_id = report_id
+        self.report_type = report_type
         self.user_id = user_id
         self.content = content
         self.created_at = created_at

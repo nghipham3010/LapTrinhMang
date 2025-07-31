@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo tổng hợp - Admin</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .stats-grid .stat-card {
+            min-width: 220px;
+            margin: 0 12px 24px 0;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 2px 16px rgba(102,126,234,0.08);
+            padding: 24px 18px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .stat-icon {
+            font-size: 2.2rem;
+            color: #667eea;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0e7ff;
+            border-radius: 50%;
+        }
+        .stat-icon.done { color: #43a047; background: #e8f5e9; }
+        .stat-icon.pending { color: #e67e22; background: #fff3e0; }
+        .stat-info h3 { margin: 0; font-size: 2rem; font-weight: 700; }
+        .stat-info p { margin: 0; color: #666; font-size: 1rem; }
+        .report-section { margin-top: 32px; }
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+        .report-table th, .report-table td { padding: 10px 14px; border-bottom: 1px solid #e1e5e9; }
+        .report-table th { background: linear-gradient(90deg,#667eea 60%,#764ba2 100%); color: #fff; }
+        .report-table tr:hover { background: #f4f7fa; }
+        .dashboard-header { margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+    <div id="layout-header"></div>
+    <div id="layout-sidebar"></div>
+    <div class="admin-container">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-chart-bar"></i> Báo cáo tổng hợp</h1>
+                <p>Thống kê nhanh về hệ thống</p>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div class="content-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> Thống kê tổng quan</h2>
+                </div>
+                <div class="stats-grid" id="reportStats">
+                    <!-- Các thẻ thống kê sẽ được render ở đây -->
+                </div>
+            </div>
+            <div class="content-card report-section">
+                <div class="card-header">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Tác vụ quá hạn</h2>
+                </div>
+                <div class="table-container">
+                    <table class="report-table" id="overdueTable">
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Deadline</th>
+                                <th>Người nhận</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Quá hạn sẽ render ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="content-card report-section">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> Sản lượng từng thành viên</h2>
+                </div>
+                <div class="table-container">
+                    <table class="report-table" id="productivityTable">
+                        <thead>
+                            <tr>
+                                <th>Thành viên</th>
+                                <th>Hoàn thành</th>
+                                <th>Đang xử lý</th>
+                                <th>Hoàn thành đúng hạn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sản lượng sẽ render ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="content-card report-section">
+                <div class="card-header">
+                    <h2><i class="fas fa-file-alt"></i> Tạo báo cáo ngắn gọn</h2>
+                </div>
+                <form id="reportForm" style="margin-bottom:18px;">
+                    <input type="hidden" id="editingReportId">
+                    <div class="form-group">
+                        <input type="text" id="reportType" placeholder="Loại báo cáo (ví dụ: tổng quan, cảnh báo...)" required style="width:220px;">
+                    </div>
+                    <div class="form-group">
+                        <textarea id="reportContent" placeholder="Nội dung báo cáo" required style="width:100%;height:60px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> <span id="saveBtnText">Lưu báo cáo</span></button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display:none;margin-left:8px;"><i class="fas fa-undo"></i> Hủy</button>
+                </form>
+                <div class="table-container">
+                    <table class="report-table" id="savedReportsTable">
+                        <thead>
+                            <tr>
+                                <th>Loại</th>
+                                <th>Nội dung</th>
+                                <th>Người tạo</th>
+                                <th>Thời gian</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Báo cáo sẽ render ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal hiển thị chi tiết -->
+    <style>
+#detailModal {
+  display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,0.25);align-items:center;justify-content:center;
+}
+#detailModal .modal-box {
+  background:#fff;min-width:340px;max-width:95vw;max-height:90vh;overflow:auto;
+  border-radius:18px;padding:38px 32px 28px 32px;position:relative;box-shadow:0 8px 32px rgba(102,126,234,0.18);
+}
+#detailModal .modal-title {
+  text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:18px;letter-spacing:0.5px;
+}
+#detailModal .close-btn {
+  position:absolute;top:16px;right:20px;font-size:1.7rem;background:#f3f4f6;border:none;cursor:pointer;
+  border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;
+  box-shadow:0 2px 8px rgba(102,126,234,0.08);
+}
+#detailModal .close-btn:hover { background:#e0e7ff; color:#3246a8; }
+#detailModal .report-table {
+  width:100%;border-collapse:collapse;margin-top:10px;max-width:100%;font-size:1.08rem;
+}
+#detailModal .report-table th, #detailModal .report-table td {
+  padding:13px 18px; border-bottom:1px solid #e1e5e9; text-align:left;
+}
+#detailModal .report-table th {
+  background:linear-gradient(90deg,#667eea 60%,#764ba2 100%);color:#fff;font-weight:600;font-size:1.08rem;
+}
+#detailModal .report-table tr:hover { background:#f4f7fa; }
+</style>
+<div id="detailModal">
+  <div class="modal-box">
+    <button onclick="closeModal()" class="close-btn" title="Đóng"><i class="fas fa-times"></i></button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+    <script>
+    // Dùng chung layout admin
+    async function loadLayout() {
+        const response = await fetch('layout.html');
+        const layoutText = await response.text();
+        const temp = document.createElement('div');
+        temp.innerHTML = layoutText;
+        const nav = temp.querySelector('.top-navbar');
+        const sidebar = temp.querySelector('.sidebar');
+        document.getElementById('layout-header').innerHTML = '';
+        document.getElementById('layout-sidebar').innerHTML = '';
+        if (nav) document.getElementById('layout-header').appendChild(nav);
+        if (sidebar) document.getElementById('layout-sidebar').appendChild(sidebar);
+        // Cập nhật tên người dùng
+        const username = localStorage.getItem('username') || 'Admin';
+        ['navUsername', 'menuUsername', 'sidebarUsername'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = username;
+        });
+    }
+    loadLayout();
+
+    // Hàm mở/đóng modal
+    function showModal(html) {
+      document.getElementById('modalContent').innerHTML = html;
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+    window.closeModal = closeModal;
+
+    // Hàm fetch dữ liệu báo cáo tổng quan và render tỷ lệ + click
+    async function fetchReportData() {
+        // Lấy tổng số user
+        const usersRes = await fetch('http://localhost:5000/api/users');
+        const users = await usersRes.json();
+        const totalUsers = users.length;
+
+        // Lấy tổng quan task
+        const overviewRes = await fetch('http://localhost:5000/api/reports/overview');
+        const overview = await overviewRes.json();
+        let totalTasks = 0, completed = 0, inProgress = 0, pending = 0;
+        overview.forEach(item => {
+            totalTasks += item.count;
+            if(item.status === 'done' || item.status === 'completed') completed += item.count;
+            else if(item.status === 'in_progress') inProgress += item.count;
+            else if(item.status === 'pending') pending += item.count;
+        });
+        // Tính tỷ lệ
+        const percent = v => totalTasks ? Math.round(v*100/totalTasks) : 0;
+
+        document.getElementById('reportStats').innerHTML = `
+            <div class="stat-card" id="stat-users" style="cursor:pointer;">
+                <div class="stat-icon users"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <h3>${totalUsers}</h3>
+                    <p>Tổng số người dùng</p>
+                </div>
+            </div>
+            <div class="stat-card" id="stat-tasks" style="cursor:pointer;">
+                <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                <div class="stat-info">
+                    <h3>${totalTasks}</h3>
+                    <p>Tổng số tác vụ</p>
+                </div>
+            </div>
+            <div class="stat-card" id="stat-completed" style="cursor:pointer;">
+                <div class="stat-icon done"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>${completed} <span style='font-size:1rem;color:#43a047;'>(${percent(completed)}%)</span></h3>
+                    <p>Đã hoàn thành</p>
+                </div>
+            </div>
+            <div class="stat-card" id="stat-inprogress" style="cursor:pointer;">
+                <div class="stat-icon pending"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>${inProgress + pending} <span style='font-size:1rem;color:#e67e22;'>(${percent(inProgress+pending)}%)</span></h3>
+                    <p>Đang xử lý / Chờ xử lý</p>
+                </div>
+            </div>
+        `;
+        // Gán sự kiện click
+        document.getElementById('stat-users').onclick = () => showUserDetail(users);
+        document.getElementById('stat-tasks').onclick = () => showTaskDetail();
+        document.getElementById('stat-completed').onclick = () => showTaskDetail('completed');
+        document.getElementById('stat-inprogress').onclick = () => showTaskDetail('inprogress');
+    }
+
+    // Hiện chi tiết user
+    function showUserDetail(users) {
+      let html = `<div class='modal-title'>Danh sách người dùng</div><div style='overflow-x:auto'><table class='report-table'><thead><tr><th>Username</th><th>Email</th><th>Vai trò</th></tr></thead><tbody>`;
+      users.forEach(u => {
+        html += `<tr><td>${u.username}</td><td>${u.email}</td><td>${u.role}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+      showModal(html);
+    }
+
+    // Hiện chi tiết task
+    async function showTaskDetail(type) {
+      const res = await fetch('http://localhost:5000/api/tasks');
+      const tasks = await res.json();
+      const users = JSON.parse(localStorage.getItem('users')||'[]');
+      let filtered = tasks;
+      let title = 'Danh sách tác vụ';
+      if(type==='completed') {
+        filtered = tasks.filter(t=>t.status==='done'||t.status==='completed');
+        title = 'Danh sách tác vụ đã hoàn thành';
+      } else if(type==='inprogress') {
+        filtered = tasks.filter(t=>t.status==='in_progress'||t.status==='pending');
+        title = 'Danh sách tác vụ đang xử lý / chờ xử lý';
+      }
+      let html = `<div class='modal-title'>${title}</div><div style='overflow-x:auto'><table class='report-table'><thead><tr><th>Tiêu đề</th><th>Trạng thái</th><th>Deadline</th><th>Người nhận</th></tr></thead><tbody>`;
+      filtered.forEach(t => {
+        const user = users.find(u=>u.user_id==t.assigned_to);
+        html += `<tr><td>${t.title}</td><td>${t.status}</td><td>${t.deadline?new Date(t.deadline).toLocaleDateString('vi-VN'):'-'}</td><td>${user?user.username:'-'}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+      showModal(html);
+    }
+
+    // Tác vụ quá hạn
+    async function fetchOverdueTasks() {
+        const res = await fetch('http://localhost:5000/api/reports/overdue_tasks');
+        const tasks = await res.json();
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const tbody = document.querySelector('#overdueTable tbody');
+        tbody.innerHTML = '';
+        if (!tasks.length) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#888;">Không có tác vụ quá hạn</td></tr>`;
+            return;
+        }
+        tasks.forEach(task => {
+            const user = users.find(u => u.user_id == task.assigned_to);
+            tbody.innerHTML += `
+                <tr>
+                    <td>${task.title}</td>
+                    <td>${new Date(task.deadline).toLocaleDateString('vi-VN')}</td>
+                    <td>${user ? user.username : 'Không xác định'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // Sản lượng từng thành viên
+    async function fetchProductivity() {
+        const res = await fetch('http://localhost:5000/api/reports/user_productivity');
+        const data = await res.json();
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const tbody = document.querySelector('#productivityTable tbody');
+        tbody.innerHTML = '';
+        if (!data.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#888;">Không có dữ liệu</td></tr>`;
+            return;
+        }
+        data.forEach(row => {
+            const user = users.find(u => u.user_id == row.assigned_to);
+            tbody.innerHTML += `
+                <tr>
+                    <td>${user ? user.username : 'Không xác định'}</td>
+                    <td>${row.completed}</td>
+                    <td>${row.in_progress}</td>
+                    <td>${row.on_time}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // Tải dữ liệu users vào localStorage để dùng cho các bảng
+    async function preloadUsers() {
+        const res = await fetch('http://localhost:5000/api/users');
+        const users = await res.json();
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    // Lưu hoặc cập nhật báo cáo
+    document.getElementById('reportForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const reportType = document.getElementById('reportType').value.trim();
+        const reportContent = document.getElementById('reportContent').value.trim();
+        const userId = localStorage.getItem('user_id');
+        const editingId = document.getElementById('editingReportId').value;
+        if (!reportType || !reportContent || !userId) {
+            alert('Vui lòng nhập đầy đủ thông tin!');
+            return;
+        }
+        let url, method, body;
+        if (editingId) {
+            url = `http://localhost:5000/api/reports/${editingId}`;
+            method = 'PUT';
+            body = JSON.stringify({report_type: reportType, content: reportContent, user_id: userId});
+        } else {
+            url = 'http://localhost:5000/api/reports/save';
+            method = 'POST';
+            body = JSON.stringify({report_type: reportType, user_id: userId, content: reportContent});
+        }
+        const res = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: body
+        });
+        const result = await res.json();
+        if (result.success) {
+            alert(editingId ? 'Cập nhật báo cáo thành công!' : 'Lưu báo cáo thành công!');
+            this.reset();
+            document.getElementById('editingReportId').value = '';
+            document.getElementById('saveBtnText').textContent = 'Lưu báo cáo';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            fetchSavedReports();
+        } else {
+            alert(result.error || 'Có lỗi xảy ra!');
+        }
+    };
+
+    // Hủy chỉnh sửa
+    document.getElementById('cancelEditBtn').onclick = function() {
+        document.getElementById('reportForm').reset();
+        document.getElementById('editingReportId').value = '';
+        document.getElementById('saveBtnText').textContent = 'Lưu báo cáo';
+        this.style.display = 'none';
+    };
+
+    // Hiển thị danh sách báo cáo đã lưu
+    async function fetchSavedReports() {
+        const res = await fetch('http://localhost:5000/api/reports');
+        const reports = await res.json();
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const tbody = document.querySelector('#savedReportsTable tbody');
+        tbody.innerHTML = '';
+        if (!reports.length) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#888;">Chưa có báo cáo nào</td></tr>`;
+            return;
+        }
+        reports.forEach(report => {
+            const user = users.find(u => u.user_id == report.created_by);
+            tbody.innerHTML += `
+                <tr>
+                    <td>${report.report_type}</td>
+                    <td>${report.content}</td>
+                    <td>${user ? user.username : 'Không xác định'}</td>
+                    <td>${new Date(report.created_at).toLocaleString('vi-VN')}</td>
+                    <td>
+                        <button class="btn btn-sm btn-edit" onclick="editReport(${report.report_id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteReport(${report.report_id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // Sửa báo cáo
+    window.editReport = async function(reportId) {
+        const res = await fetch(`http://localhost:5000/api/reports/${reportId}`);
+        const report = await res.json();
+        document.getElementById('reportType').value = report.report_type;
+        document.getElementById('reportContent').value = report.content;
+        document.getElementById('editingReportId').value = report.report_id;
+        document.getElementById('saveBtnText').textContent = 'Cập nhật báo cáo';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        window.scrollTo({top: document.getElementById('reportForm').offsetTop - 80, behavior: 'smooth'});
+    };
+
+    // Xóa báo cáo
+    window.deleteReport = async function(reportId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa báo cáo này?')) return;
+        const res = await fetch(`http://localhost:5000/api/reports/${reportId}`, {method: 'DELETE'});
+        const result = await res.json();
+        if (result.success) {
+            alert('Xóa báo cáo thành công!');
+            fetchSavedReports();
+        } else {
+            alert(result.error || 'Có lỗi xảy ra!');
+        }
+    };
+
+    // Khởi chạy ứng dụng
+    async function init() {
+        await preloadUsers();
+        await fetchReportData();
+        await fetchOverdueTasks();
+        await fetchProductivity();
+        await fetchSavedReports();
+    }
+    init();
+    </script>
+    <script src="../app.js"></script>
+</body>
+</html>
+

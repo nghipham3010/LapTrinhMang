@@ -4,68 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Tác vụ - Task Management</title>
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div id="layout-container">
-        <div id="layout-header"></div>
-        <div id="layout-sidebar"></div>
-    </div>
+    <div id="layout-header"></div>
+    <div id="layout-sidebar"></div>
 
-    <div class="main-content">
-        <div class="tasks-container" id="tasksContainer">
-            <div class="tasks-header">
-                <div class="header-left">
-                    <h1 class="tasks-title">
-                        <i class="fas fa-tasks"></i>
-                        Quản lý Tác vụ
-                    </h1>
-                    <p class="tasks-subtitle">Quản lý và theo dõi tất cả tác vụ trong hệ thống</p>
-                </div>
-                <div class="header-right">
-                    <button class="add-task-btn" onclick="openAddTaskModal()">
-                        <i class="fas fa-plus"></i>
-                        <span>Thêm Tác vụ</span>
-                    </button>
-                    <button class="refresh-btn" onclick="loadTasks()" title="Làm mới">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
+    <div class="admin-container">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-tasks"></i> Quản lý Tác vụ</h1>
+                <p>Quản lý và theo dõi tất cả tác vụ trong hệ thống</p>
             </div>
-
+        </div>
+        <div class="dashboard-content">
             <div class="stats-cards">
                 <div class="stat-card">
-                    <div class="stat-icon pending">
-                        <i class="fas fa-clock"></i>
-                    </div>
+                    <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
                     <div class="stat-info">
                         <h3 id="pendingCount">0</h3>
                         <p>Chờ xử lý</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon in-progress">
-                        <i class="fas fa-spinner"></i>
-                    </div>
+                    <div class="stat-icon in-progress"><i class="fas fa-spinner"></i></div>
                     <div class="stat-info">
                         <h3 id="inProgressCount">0</h3>
                         <p>Đang thực hiện</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon completed">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
+                    <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
                     <div class="stat-info">
                         <h3 id="completedCount">0</h3>
                         <p>Hoàn thành</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon overdue">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
+                    <div class="stat-icon overdue"><i class="fas fa-exclamation-triangle"></i></div>
                     <div class="stat-info">
                         <h3 id="overdueCount">0</h3>
                         <p>Quá hạn</p>
@@ -73,63 +51,59 @@
                 </div>
             </div>
 
-            <div class="tasks-filters">
-                <div class="filters-left">
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-filter"></i>
-                            Trạng thái:
-                        </label>
-                        <select class="filter-select" id="statusFilter" onchange="filterTasks()">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="pending">Chờ xử lý</option>
-                            <option value="in-progress">Đang thực hiện</option>
-                            <option value="completed">Hoàn thành</option>
-                            <option value="overdue">Quá hạn</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-user"></i>
-                            Người thực hiện:
-                        </label>
-                        <select class="filter-select" id="userFilter" onchange="filterTasks()">
-                            <option value="">Tất cả người dùng</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-search"></i>
-                            Tìm kiếm:
-                        </label>
-                        <input type="text" class="filter-input" id="searchFilter" placeholder="Tìm theo tiêu đề, mô tả..." onkeyup="filterTasks()">
+            <div class="content-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> Danh Sách Tác Vụ</h2>
+                    <div class="card-actions">
+                        <div class="filter-group">
+                            <label class="filter-label"><i class="fas fa-filter"></i> Trạng thái:</label>
+                            <select class="filter-select" id="statusFilter" onchange="filterTasks()">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Chờ xử lý</option>
+                                <option value="in-progress">Đang thực hiện</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="overdue">Quá hạn</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label"><i class="fas fa-user"></i> Người thực hiện:</label>
+                            <select class="filter-select" id="userFilter" onchange="filterTasks()">
+                                <option value="">Tất cả người dùng</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label"><i class="fas fa-search"></i> Tìm kiếm:</label>
+                            <input type="text" class="filter-input" id="searchFilter" placeholder="Tìm theo tiêu đề, mô tả..." onkeyup="filterTasks()">
+                        </div>
+                        <button class="clear-filters-btn" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Xóa bộ lọc
+                        </button>
+                        <button class="add-task-btn" onclick="openAddTaskModal()">
+                            <i class="fas fa-plus"></i> Thêm Tác vụ
+                        </button>
+                        <button class="refresh-btn" onclick="loadTasks()" title="Làm mới">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="filters-right">
-                    <button class="clear-filters-btn" onclick="clearFilters()">
-                        <i class="fas fa-times"></i>
-                        Xóa bộ lọc
-                    </button>
-                </div>
-            </div>
-
-            <div id="tasksGrid" class="tasks-grid">
-                <div class="loading">
-                    <div class="loading-spinner">
-                        <i class="fas fa-spinner fa-spin"></i>
+                <div id="tasksGrid" class="tasks-grid">
+                    <div class="loading">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <p>Đang tải danh sách tác vụ...</p>
                     </div>
-                    <p>Đang tải danh sách tác vụ...</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal thêm/sửa tác vụ -->
     <div id="taskModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title" id="modalTitle">
-                    <i class="fas fa-plus"></i>
-                    Thêm Tác vụ Mới
+                    <i class="fas fa-plus"></i> Thêm Tác vụ Mới
                 </h2>
                 <span class="close" onclick="closeTaskModal()">
                     <i class="fas fa-times"></i>
@@ -137,34 +111,26 @@
             </div>
             <form id="taskForm">
                 <input type="hidden" id="taskId" name="taskId">
-                
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="taskTitle">
-                            <i class="fas fa-heading"></i>
-                            Tiêu đề tác vụ *
+                            <i class="fas fa-heading"></i> Tiêu đề tác vụ *
                         </label>
-                        <input type="text" class="form-input" id="taskTitle" name="title" required 
-                               placeholder="Nhập tiêu đề tác vụ...">
+                        <input type="text" class="form-input" id="taskTitle" name="title" required placeholder="Nhập tiêu đề tác vụ...">
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="taskDescription">
-                            <i class="fas fa-align-left"></i>
-                            Mô tả
+                            <i class="fas fa-align-left"></i> Mô tả
                         </label>
-                        <textarea class="form-textarea" id="taskDescription" name="description" 
-                                  placeholder="Nhập mô tả chi tiết về tác vụ..."></textarea>
+                        <textarea class="form-textarea" id="taskDescription" name="description" placeholder="Nhập mô tả chi tiết về tác vụ..."></textarea>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="taskStatus">
-                            <i class="fas fa-info-circle"></i>
-                            Trạng thái *
+                            <i class="fas fa-info-circle"></i> Trạng thái *
                         </label>
                         <select class="form-select" id="taskStatus" name="status" required>
                             <option value="pending">Chờ xử lý</option>
@@ -174,39 +140,34 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="taskDeadline">
-                            <i class="fas fa-calendar-alt"></i>
-                            Hạn chót *
+                            <i class="fas fa-calendar-alt"></i> Hạn chót *
                         </label>
                         <input type="datetime-local" class="form-input" id="taskDeadline" name="deadline" required>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="taskAssignedTo">
-                            <i class="fas fa-user-plus"></i>
-                            Giao cho *
+                            <i class="fas fa-user-plus"></i> Giao cho *
                         </label>
                         <select class="form-select" id="taskAssignedTo" name="assigned_to" required>
                             <option value="">Chọn người thực hiện</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">
-                        <i class="fas fa-times"></i>
-                        Hủy
+                        <i class="fas fa-times"></i> Hủy
                     </button>
                     <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <i class="fas fa-save"></i>
-                        <span>Lưu Tác vụ</span>
+                        <i class="fas fa-save"></i> <span>Lưu Tác vụ</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Toast thông báo -->
     <div id="toast" class="toast">
         <div class="toast-content">
             <i class="toast-icon"></i>
@@ -215,50 +176,52 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="../app.js"></script>
     <script>
         let tasks = [];
         let users = [];
         let filteredTasks = [];
         let socket;
 
+        // Khởi tạo WebSocket realtime
         function initializeWebSocket() {
             socket = io();
             socket.on('connect', () => console.log('Connected to WebSocket'));
-            socket.on('task_update', (data) => {
+            socket.on('task_update', () => {
                 loadTasks();
                 showToast('Cập nhật tác vụ thành công!', 'success');
             });
-            socket.on('new_task', (data) => {
+            socket.on('new_task', () => {
                 loadTasks();
                 showToast('Tác vụ mới đã được tạo!', 'success');
             });
         }
 
+        // Dùng chung layout admin
         async function loadLayout() {
             try {
                 const response = await fetch('layout.html');
                 const layoutText = await response.text();
                 const temp = document.createElement('div');
                 temp.innerHTML = layoutText;
-                
+                document.getElementById('layout-header').innerHTML = '';
+                document.getElementById('layout-sidebar').innerHTML = '';
                 const nav = temp.querySelector('.top-navbar');
                 const sidebar = temp.querySelector('.sidebar');
-                
                 if (nav) document.getElementById('layout-header').appendChild(nav);
                 if (sidebar) document.getElementById('layout-sidebar').appendChild(sidebar);
-                
                 const username = localStorage.getItem('username') || 'Admin';
                 ['navUsername', 'menuUsername', 'sidebarUsername'].forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) element.textContent = username;
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = username;
                 });
-
                 initializeLayoutFunctions();
             } catch (error) {
                 console.error('Error loading layout:', error);
             }
         }
 
+        // Các hàm điều hướng sidebar/menu
         function initializeLayoutFunctions() {
             window.toggleSidebar = () => document.body.classList.toggle('sidebar-collapsed');
             window.showDashboard = () => window.location.href = 'index.html';
@@ -284,20 +247,18 @@
             loadNotifications();
         }
 
+        // Thông báo
         function loadNotifications() {
             const user = JSON.parse(localStorage.getItem('user'));
             if (!user) return;
-
             fetch(`/api/notifications/${user.user_id}`)
                 .then(response => response.json())
                 .then(data => {
                     const notificationList = document.getElementById('notificationList');
                     const badge = document.getElementById('notificationBadge');
-                    
                     if (notificationList) {
                         const unreadCount = data.filter(n => !n.is_read).length;
                         badge.textContent = unreadCount;
-                        
                         notificationList.innerHTML = data.map(notification => `
                             <div class="notification-item ${notification.is_read ? 'read' : ''}">
                                 <div class="notification-content">
@@ -312,6 +273,7 @@
                 .catch(error => console.error('Error loading notifications:', error));
         }
 
+        // Lấy danh sách user cho dropdown
         function loadUsersDropdown() {
             fetch('/api/users')
                 .then(response => response.json())
@@ -325,7 +287,6 @@
         function populateUserDropdown() {
             const select = document.getElementById('taskAssignedTo');
             const userFilter = document.getElementById('userFilter');
-            
             if (select) {
                 select.innerHTML = '<option value="">Chọn người thực hiện</option>';
                 users.forEach(user => {
@@ -337,7 +298,6 @@
                     }
                 });
             }
-            
             if (userFilter) {
                 userFilter.innerHTML = '<option value="">Tất cả người dùng</option>';
                 users.forEach(user => {
@@ -351,6 +311,7 @@
             }
         }
 
+        // Load danh sách tác vụ
         function loadTasks() {
             const tasksGrid = document.getElementById('tasksGrid');
             tasksGrid.innerHTML = `
@@ -361,7 +322,6 @@
                     <p>Đang tải danh sách tác vụ...</p>
                 </div>
             `;
-
             fetch('/api/tasks')
                 .then(response => response.json())
                 .then(data => {
@@ -377,14 +337,14 @@
                             <i class="fas fa-exclamation-triangle"></i>
                             <p>Không thể tải danh sách tác vụ</p>
                             <button class="btn btn-primary" onclick="loadTasks()">
-                                <i class="fas fa-refresh"></i>
-                                Thử lại
+                                <i class="fas fa-refresh"></i> Thử lại
                             </button>
                         </div>
                     `;
                 });
         }
 
+        // Cập nhật thống kê
         function updateStatistics() {
             const stats = {
                 pending: tasks.filter(t => t.status === 'pending').length,
@@ -392,7 +352,6 @@
                 completed: tasks.filter(t => t.status === 'completed').length,
                 overdue: tasks.filter(t => isOverdue(t.deadline)).length
             };
-
             document.getElementById('pendingCount').textContent = stats.pending;
             document.getElementById('inProgressCount').textContent = stats.inProgress;
             document.getElementById('completedCount').textContent = stats.completed;
@@ -404,21 +363,19 @@
             return new Date(deadline) < new Date();
         }
 
+        // Lọc tác vụ
         function filterTasks() {
             const statusFilter = document.getElementById('statusFilter').value;
             const userFilter = document.getElementById('userFilter').value;
             const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-
             filteredTasks = tasks.filter(task => {
                 const statusMatch = !statusFilter || task.status === statusFilter;
                 const userMatch = !userFilter || task.assigned_to == userFilter;
-                const searchMatch = !searchFilter || 
+                const searchMatch = !searchFilter ||
                     task.title.toLowerCase().includes(searchFilter) ||
                     (task.description && task.description.toLowerCase().includes(searchFilter));
-
                 return statusMatch && userMatch && searchMatch;
             });
-
             displayTasks();
         }
 
@@ -430,23 +387,21 @@
             displayTasks();
         }
 
+        // Hiển thị danh sách tác vụ
         function displayTasks() {
             const tasksGrid = document.getElementById('tasksGrid');
-            
             if (filteredTasks.length === 0) {
                 tasksGrid.innerHTML = `
                     <div class="no-tasks">
                         <i class="fas fa-tasks"></i>
                         <p>Không có tác vụ nào</p>
                         <button class="btn btn-primary" onclick="openAddTaskModal()">
-                            <i class="fas fa-plus"></i>
-                            Thêm tác vụ đầu tiên
+                            <i class="fas fa-plus"></i> Thêm tác vụ đầu tiên
                         </button>
                     </div>
                 `;
                 return;
             }
-
             tasksGrid.innerHTML = filteredTasks.map(task => `
                 <div class="task-card ${isOverdue(task.deadline) ? 'overdue' : ''}">
                     <div class="task-header">
@@ -459,9 +414,7 @@
                             ${getStatusText(task.status)}
                         </span>
                     </div>
-                    
                     <p class="task-description">${task.description || 'Không có mô tả'}</p>
-                    
                     <div class="task-details">
                         <div class="task-detail">
                             <i class="fas fa-user"></i>
@@ -476,7 +429,6 @@
                             <span>Tạo lúc: ${formatDateTime(task.created_at)}</span>
                         </div>
                     </div>
-                    
                     <div class="task-actions">
                         <button class="task-btn edit-btn" onclick="editTask(${task.task_id})" title="Chỉnh sửa">
                             <i class="fas fa-edit"></i>
@@ -520,6 +472,7 @@
             return date.toLocaleString('vi-VN');
         }
 
+        // Modal tác vụ
         function openAddTaskModal() {
             document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> Thêm Tác vụ Mới';
             document.getElementById('taskForm').reset();
@@ -535,7 +488,6 @@
         function editTask(taskId) {
             const task = tasks.find(t => t.task_id == taskId);
             if (!task) return;
-
             document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa Tác vụ';
             document.getElementById('taskId').value = task.task_id;
             document.getElementById('taskTitle').value = task.title;
@@ -544,19 +496,16 @@
             document.getElementById('taskDeadline').value = formatDateTimeForInput(task.deadline);
             document.getElementById('taskAssignedTo').value = task.assigned_to;
             document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i><span>Cập nhật Tác vụ</span>';
-            
             openAddTaskModal();
         }
 
         function deleteTask(taskId) {
             if (!confirm('Bạn có chắc chắn muốn xóa tác vụ này?')) return;
-
             const user = JSON.parse(localStorage.getItem('user'));
             if (!user) {
                 showToast('Vui lòng đăng nhập lại', 'error');
                 return;
             }
-
             fetch(`/api/tasks/${taskId}?admin_id=${user.user_id}`, {
                 method: 'DELETE'
             })
@@ -581,16 +530,15 @@
             return date.toISOString().slice(0, 16);
         }
 
+        // Toast thông báo
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             const icon = toast.querySelector('.toast-icon');
             const messageEl = toast.querySelector('.toast-message');
-            
             messageEl.textContent = message;
             toast.className = `toast ${type}`;
             icon.className = `toast-icon fas ${getToastIcon(type)}`;
             toast.style.display = 'block';
-            
             setTimeout(() => {
                 toast.style.display = 'none';
             }, 3000);
@@ -606,9 +554,9 @@
             return iconMap[type] || 'fa-info-circle';
         }
 
+        // Xử lý submit form tác vụ
         document.getElementById('taskForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = new FormData(e.target);
             const taskData = {
                 title: formData.get('title'),
@@ -617,25 +565,18 @@
                 deadline: formData.get('deadline'),
                 assigned_to: formData.get('assigned_to')
             };
-
             const taskId = formData.get('taskId');
             const user = JSON.parse(localStorage.getItem('user'));
-            
             if (!user) {
                 showToast('Vui lòng đăng nhập lại', 'error');
                 return;
             }
-
             taskData.created_by = user.user_id;
-
             const url = taskId ? `/api/tasks/${taskId}?admin_id=${user.user_id}` : '/api/tasks';
             const method = taskId ? 'PUT' : 'POST';
-
             fetch(url, {
                 method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(taskData)
             })
             .then(response => response.json())
@@ -654,6 +595,7 @@
             });
         });
 
+        // Đóng modal khi click ngoài
         window.onclick = function(event) {
             const taskModal = document.getElementById('taskModal');
             if (event.target === taskModal) {
@@ -661,6 +603,7 @@
             }
         }
 
+        // Khởi tạo khi load trang
         window.addEventListener('DOMContentLoaded', () => {
             loadLayout();
             loadUsersDropdown();
@@ -668,6 +611,5 @@
             initializeWebSocket();
         });
     </script>
-    <script src="../app.js"></script>
 </body>
-</html> 
+</html>

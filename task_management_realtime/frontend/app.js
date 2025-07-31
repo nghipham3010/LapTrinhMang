@@ -137,7 +137,7 @@ function showReports() {
     document.querySelectorAll('.nav-link, .sidebar-item').forEach(link => link.classList.remove('active'));
     const reportSidebarLink = document.querySelectorAll('.sidebar-item')[3];
     if (reportSidebarLink) reportSidebarLink.classList.add('active');
-    alert('Tính năng báo cáo sẽ được phát triển sau!');
+    // alert('Tính năng báo cáo sẽ được phát triển sau!');
 }
 
 function showProfile() {
@@ -866,7 +866,7 @@ function markNotificationRead(notificationId) {
     });
 }
 
-// Mark all notifications as read
+// làm tất cả thông báo đã đọc
 function markAllNotificationsRead() {
     const userId = localStorage.getItem('user_id');
     if (!userId) return;

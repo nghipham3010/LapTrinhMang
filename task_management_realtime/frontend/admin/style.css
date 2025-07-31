@@ -464,7 +464,7 @@
     }
     
     .nav-menu {
-        display: none;
+        display: none; 
     }
     
     .dashboard-content {
@@ -1051,8 +1051,7 @@
     color: #333;
     font-size: 0.95rem;
 }
-    color: #555;
-}
+    
 
 .form-input, .form-textarea, .form-select {
     width: 100%;

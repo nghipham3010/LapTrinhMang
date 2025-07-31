@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
 from db import get_connection
-from models import Task, TaskHistory, User
+from models import Task, TaskHistory, User, Report
 from websocket_manager import socketio, notify_task_update
 from utils import dict_from_cursor
 import datetime
@@ -542,6 +542,187 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
+
+# ----------- REPORT APIs -----------
+from flask import g
+
+# API: Lấy danh sách tổng quan về task
+@app.route('/api/reports/overview', methods=['GET'])
+def report_overview():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT status, COUNT(*) as count FROM Tasks GROUP BY status')
+    data = [{'status': row[0], 'count': row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lấy xu hướng hoàn thành task
+@app.route('/api/reports/completion_trend', methods=['GET'])
+def report_completion_trend():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT CAST(deadline AS DATE) as date, COUNT(*) as completed_count
+        FROM Tasks
+        WHERE status = 'completed'
+        GROUP BY CAST(deadline AS DATE)
+        ORDER BY date
+    """)
+    data = [{'date': str(row[0]), 'completed_count': row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lấy thời gian hoàn thành trung bình của task
+@app.route('/api/reports/avg_completion_time', methods=['GET'])
+def report_avg_completion_time():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT AVG(DATEDIFF(second, deadline, GETDATE())) as avg_completion_time
+        FROM Tasks
+        WHERE status = 'completed'
+    """)
+    row = cursor.fetchone()
+    avg_time = row[0] if row else None
+    conn.close()
+    return jsonify({'avg_completion_time': avg_time})
+
+# API: Lấy danh sách task quá hạn
+@app.route('/api/reports/overdue_tasks', methods=['GET'])
+def report_overdue_tasks():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT task_id, title, deadline, assigned_to
+        FROM Tasks
+        WHERE status != 'completed' AND deadline < GETDATE()
+    """)
+    data = [dict_from_cursor(cursor, row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lấy số lượng task trên từng user
+@app.route('/api/reports/tasks_per_user', methods=['GET'])
+def report_tasks_per_user():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT assigned_to, status, COUNT(*) as count
+        FROM Tasks
+        GROUP BY assigned_to, status
+    """)
+    data = [{'assigned_to': row[0], 'status': row[1], 'count': row[2]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lấy sản lượng của từng user
+@app.route('/api/reports/user_productivity', methods=['GET'])
+def report_user_productivity():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT assigned_to,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+            SUM(CASE WHEN status = 'completed' AND deadline >= GETDATE() THEN 1 ELSE 0 END) as on_time
+        FROM Tasks
+        GROUP BY assigned_to
+    """)
+    data = [{'assigned_to': row[0], 'completed': row[1], 'in_progress': row[2], 'on_time': row[3]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lấy thời gian hoàn thành trung bình của từng user
+@app.route('/api/reports/user_avg_time', methods=['GET'])
+def report_user_avg_time():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT assigned_to, AVG(DATEDIFF(second, deadline, GETDATE())) as avg_time
+        FROM Tasks
+        WHERE status = 'completed'
+        GROUP BY assigned_to
+    """)
+    data = [{'assigned_to': row[0], 'avg_time': row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lấy phân bổ công việc trên từng user
+@app.route('/api/reports/work_distribution', methods=['GET'])
+def report_work_distribution():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT assigned_to, COUNT(*) as task_count
+        FROM Tasks
+        GROUP BY assigned_to
+    """)
+    data = [{'assigned_to': row[0], 'task_count': row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(data)
+
+# API: Lưu report
+@app.route('/api/reports/save', methods=['POST'])
+def save_report():
+    data = request.get_json()
+    report_type = data.get('report_type')
+    user_id = data.get('user_id')
+    content = data.get('content')
+    if not (report_type and user_id and content):
+        return jsonify({'error': 'Missing fields'}), 400
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO Reports (report_type, created_by, content) VALUES (?, ?, ?)', (report_type, user_id, content))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+# API: Lấy danh sách report đã lưu
+@app.route('/api/reports', methods=['GET'])
+def get_reports():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT report_id, report_type, created_by, content, created_at FROM Reports ORDER BY created_at DESC')
+    reports = [dict_from_cursor(cursor, row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(reports)
+
+# API: Lấy chi tiết report
+@app.route('/api/reports/<int:report_id>', methods=['GET'])
+def get_report_detail(report_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT report_id, report_type, created_by, content, created_at FROM Reports WHERE report_id=?', (report_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return jsonify(dict_from_cursor(cursor, row))
+    else:
+        return jsonify({'error': 'Report not found'}), 404
+
+# API: Xóa report
+@app.route('/api/reports/<int:report_id>', methods=['DELETE'])
+def delete_report(report_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM Reports WHERE report_id=?', (report_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+# API: Sửa report
+@app.route('/api/reports/<int:report_id>', methods=['PUT'])
+def update_report(report_id):
+    data = request.get_json()
+    content = data.get('content')
+    if not content:
+        return jsonify({'error': 'Missing content'}), 400
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE Reports SET content=? WHERE report_id=?', (content, report_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
