@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tác vụ - Task Management</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .tasks-container {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        .tasks-container.sidebar-collapsed {
+            margin-left: 60px;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .tasks-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .add-task-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .task-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-in-progress {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .task-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .task-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .view-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="layout-container"></div>
+
+    <div class="tasks-container" id="tasksContainer">
+        <div class="tasks-header">
+            <h1 class="tasks-title">
+                <i class="fas fa-list"></i>
+                Quản lý Tác vụ
+            </h1>
+            <button class="add-task-btn" onclick="openAddTaskModal()">
+                <i class="fas fa-plus"></i>
+                Thêm Tác vụ
+            </button>
+        </div>
+
+        <div class="tasks-filters" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-weight: 600; color: #555; font-size: 0.9rem;">Trạng thái:</label>
+                <select id="statusFilter" onchange="filterTasks()" style="padding: 8px 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 0.9rem;">
+                    <option value="">Tất cả</option>
+                    <option value="pending">Chờ xử lý</option>
+                    <option value="in-progress">Đang thực hiện</option>
+                    <option value="completed">Hoàn thành</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-weight: 600; color: #555; font-size: 0.9rem;">Người thực hiện:</label>
+                <select id="userFilter" onchange="filterTasks()" style="padding: 8px 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 0.9rem;">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-weight: 600; color: #555; font-size: 0.9rem;">Tìm kiếm:</label>
+                <input type="text" id="searchFilter" placeholder="Tìm theo tiêu đề..." onkeyup="filterTasks()" style="padding: 8px 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 0.9rem;">
+            </div>
+        </div>
+
+        <div id="tasksGrid" class="tasks-grid">
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Đang tải tác vụ...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Thêm Tác vụ Mới</h2>
+            <form id="taskForm">
+                <input type="hidden" id="taskId" name="taskId">
+                
+                <div class="form-group">
+                    <label class="form-label" for="taskTitle">Tiêu đề tác vụ *</label>
+                    <input type="text" class="form-input" id="taskTitle" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskDescription">Mô tả</label>
+                    <textarea class="form-textarea" id="taskDescription" name="description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskStatus">Trạng thái *</label>
+                    <select class="form-select" id="taskStatus" name="status" required>
+                        <option value="pending">Chờ xử lý</option>
+                        <option value="in-progress">Đang thực hiện</option>
+                        <option value="completed">Hoàn thành</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskDeadline">Hạn chót *</label>
+                    <input type="datetime-local" class="form-input" id="taskDeadline" name="deadline" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskAssignedTo">Giao cho *</label>
+                    <select class="form-select" id="taskAssignedTo" name="assigned_to" required>
+                        <option value="">Chọn người thực hiện</option>
+                    </select>
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Lưu Tác vụ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        let tasks = [];
+        let users = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLayout();
+            loadUsers();
+            loadTasks();
+        });
+
+        function loadLayout() {
+            fetch('layout.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('layout-container').innerHTML = html;
+                })
+                .catch(error => console.error('Error loading layout:', error));
+        }
+
+        function loadUsers() {
+            fetch('/api/users')
+                .then(response => response.json())
+                .then(data => {
+                    users = data;
+                    populateUserDropdown();
+                })
+                .catch(error => console.error('Error loading users:', error));
+        }
+
+        function populateUserDropdown() {
+            const select = document.getElementById('taskAssignedTo');
+            const userFilter = document.getElementById('userFilter');
+            
+            select.innerHTML = '<option value="">Chọn người thực hiện</option>';
+            userFilter.innerHTML = '<option value="">Tất cả</option>';
+            
+            users.forEach(user => {
+                if (user.role === 'member') {
+                    const option1 = document.createElement('option');
+                    option1.value = user.user_id;
+                    option1.textContent = user.username;
+                    select.appendChild(option1);
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = user.user_id;
+                    option2.textContent = user.username;
+                    userFilter.appendChild(option2);
+                }
+            });
+        }
+
+        function loadTasks() {
+            fetch('/api/tasks')
+                .then(response => response.json())
+                .then(data => {
+                    tasks = data;
+                    displayTasks();
+                })
+                .catch(error => {
+                    console.error('Error loading tasks:', error);
+                    document.getElementById('tasksGrid').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Không thể tải danh sách tác vụ</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function filterTasks() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const userFilter = document.getElementById('userFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+            const filteredTasks = tasks.filter(task => {
+                const statusMatch = !statusFilter || task.status === statusFilter;
+                const userMatch = !userFilter || task.assigned_to == userFilter;
+                const searchMatch = !searchFilter || task.title.toLowerCase().includes(searchFilter);
+
+                return statusMatch && userMatch && searchMatch;
+            });
+
+            displayTasks(filteredTasks);
+        }
+
+        function displayTasks(tasksToDisplay = tasks) {
+            const tasksGrid = document.getElementById('tasksGrid');
+            
+            if (tasksToDisplay.length === 0) {
+                tasksGrid.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-tasks"></i>
+                        <p>Không có tác vụ nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tasksGrid.innerHTML = tasksToDisplay.map(task => `
+                <div class="task-card">
+                    <div class="task-header">
+                        <div>
+                            <h3 class="task-title">${task.title}</h3>
+                        </div>
+                        <span class="task-status status-${task.status}">${getStatusText(task.status)}</span>
+                    </div>
+                    <p class="task-description">${task.description || 'Không có mô tả'}</p>
+                    <div style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">
+                        <div><i class="fas fa-user"></i> ${getUserName(task.assigned_to)}</div>
+                        <div><i class="fas fa-calendar"></i> Hạn chót: ${formatDateTime(task.deadline)}</div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-btn edit-btn" onclick="editTask(${task.task_id})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="task-btn delete-btn" onclick="deleteTask(${task.task_id})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Chờ xử lý',
+                'in-progress': 'Đang thực hiện',
+                'completed': 'Hoàn thành'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getUserName(userId) {
+            const user = users.find(u => u.user_id == userId);
+            return user ? user.username : 'Không xác định';
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return 'Không có';
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN');
+        }
+
+        function openAddTaskModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm Tác vụ Mới';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('submitBtn').textContent = 'Thêm Tác vụ';
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
+
+        function editTask(taskId) {
+            const task = tasks.find(t => t.task_id == taskId);
+            if (!task) return;
+
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa Tác vụ';
+            document.getElementById('taskId').value = task.task_id;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description || '';
+            document.getElementById('taskStatus').value = task.status;
+            document.getElementById('taskDeadline').value = formatDateTimeForInput(task.deadline);
+            document.getElementById('taskAssignedTo').value = task.assigned_to;
+            document.getElementById('submitBtn').textContent = 'Cập nhật Tác vụ';
+            
+            openAddTaskModal();
+        }
+
+        function deleteTask(taskId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa tác vụ này?')) return;
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                alert('Vui lòng đăng nhập lại');
+                return;
+            }
+
+            fetch(`/api/tasks/${taskId}?admin_id=${user.user_id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTasks();
+                    alert('Xóa tác vụ thành công');
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể xóa tác vụ'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting task:', error);
+                alert('Lỗi khi xóa tác vụ');
+            });
+        }
+
+        function formatDateTimeForInput(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toISOString().slice(0, 16);
+        }
+
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const taskData = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                status: formData.get('status'),
+                deadline: formData.get('deadline'),
+                assigned_to: formData.get('assigned_to')
+            };
+
+            const taskId = formData.get('taskId');
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            if (!user) {
+                alert('Vui lòng đăng nhập lại');
+                return;
+            }
+
+            taskData.created_by = user.user_id;
+
+            const url = taskId ? `/api/tasks/${taskId}?admin_id=${user.user_id}` : '/api/tasks';
+            const method = taskId ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(taskData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeTaskModal();
+                    loadTasks();
+                    alert(taskId ? 'Cập nhật tác vụ thành công' : 'Thêm tác vụ thành công');
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể lưu tác vụ'));
+                }
+            })
+            .catch(error => {
+                console.error('Error saving task:', error);
+                alert('Lỗi khi lưu tác vụ');
+            });
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+    <script src="../app.js"></script>
+</body>
+</html>

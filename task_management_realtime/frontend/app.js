@@ -130,12 +130,7 @@ function showTasks() {
 }
 
 function showUsers() {
-    document.querySelectorAll('.nav-link, .sidebar-item').forEach(link => link.classList.remove('active'));
-    const userLink = document.querySelectorAll('.nav-link')[2];
-    const userSidebarLink = document.querySelectorAll('.sidebar-item')[2];
-    if (userLink) userLink.classList.add('active');
-    if (userSidebarLink) userSidebarLink.classList.add('active');
-    alert('Tính năng quản lý người dùng sẽ được phát triển sau!');
+    window.location.href = 'user_management.html';
 }
 
 function showReports() {
@@ -210,13 +205,13 @@ function renderTasks(tasks) {
     
     filteredTasks.forEach(task => {
         let assignedName = task.assigned_to;
-        const user = users.find(u => u.id == task.assigned_to);
+        const user = users.find(u => u.user_id == task.assigned_to);
         if (user) assignedName = user.username + ' (' + user.role + ')';
         
-        // Determine status for rendering (member: use local, admin: use DB)
+        // dùng để hiển thị trạng thái của task (member: use local, admin: use DB)
         let displayStatus = task.status;
-        if (userRole === 'member' && localMemberCompletions[task.id] !== undefined) {
-            displayStatus = localMemberCompletions[task.id] ? 'done' : 'pending';
+        if (userRole === 'member' && localMemberCompletions[task.task_id] !== undefined) {
+            displayStatus = localMemberCompletions[task.task_id] ? 'done' : 'pending';
         }
         
         const tr = document.createElement('tr');
@@ -227,7 +222,7 @@ function renderTasks(tasks) {
         let actionColumn = '';
         if (userRole === 'admin') {
             actionColumn = `
-                <button onclick="updateStatus(${task.id}, '${task.status}')" class="btn-update">
+                <button onclick="updateStatus(${task.task_id}, '${task.status}')" class="btn-update">
                     <i class="fas fa-${task.status === 'pending' ? 'check' : 'undo'}"></i>
                     ${task.status === 'pending' ? 'Hoàn thành' : 'Chuyển về chờ'}
                 </button>
@@ -237,12 +232,12 @@ function renderTasks(tasks) {
             actionColumn = `
                 <div class="task-completion">
                     <input type="checkbox" 
-                           id="task_${task.id}" 
+                           id="task_${task.task_id}" 
                            ${isChecked ? 'checked' : ''} 
-                           onchange="toggleTaskCompletion(${task.id}, this.checked, '${task.status}')"
+                           onchange="toggleTaskCompletion(${task.task_id}, this.checked, '${task.status}')"
                            class="task-checkbox"
                            ${isChecked ? 'disabled' : ''}>
-                    <label for="task_${task.id}" class="task-checkbox-label">
+                    <label for="task_${task.task_id}" class="task-checkbox-label">
                         <i class="fas fa-${isChecked ? 'check-circle' : 'circle'}"></i>
                         ${isChecked ? 'Đã hoàn thành' : 'Chưa hoàn thành'}
                     </label>
@@ -527,7 +522,7 @@ function fetchUsers() {
                 select.innerHTML = '<option value="">Chọn người dùng</option>';
                 users.forEach(u => {
                     const option = document.createElement('option');
-                    option.value = u.id;
+                    option.value = u.user_id;
                     option.textContent = `${u.username} (${u.role})`;
                     select.appendChild(option);
                     console.log('Added option:', u.username, u.role);
@@ -542,7 +537,7 @@ function fetchUsers() {
                         retrySelect.innerHTML = '<option value="">Chọn người dùng</option>';
                         users.forEach(u => {
                             const option = document.createElement('option');
-                            option.value = u.id;
+                            option.value = u.user_id;
                             option.textContent = `${u.username} (${u.role})`;
                             retrySelect.appendChild(option);
                             console.log('Added option (retry):', u.username, u.role);
@@ -569,7 +564,7 @@ function refreshUsersDropdown() {
         select.innerHTML = '<option value="">Chọn người dùng</option>';
         users.forEach(u => {
             const option = document.createElement('option');
-            option.value = u.id;
+            option.value = u.user_id;
             option.textContent = `${u.username} (${u.role})`;
             select.appendChild(option);
         });
@@ -669,7 +664,7 @@ function login(event) {
         if (user.error) {
             alert(user.error);
         } else {
-            localStorage.setItem('user_id', user.id);
+            localStorage.setItem('user_id', user.user_id);
             localStorage.setItem('user_role', user.role);
             localStorage.setItem('username', user.username);
             
@@ -705,16 +700,16 @@ function register(event) {
     }
 
     const data = {
-        full_name: document.getElementById('registerFullName').value.trim(),
-        email: document.getElementById('registerEmail').value.trim(),
         username: document.getElementById('registerUsername').value.trim(),
         password: password,
+        full_name: document.getElementById('registerFullName').value.trim(),
+        email: document.getElementById('registerEmail').value.trim(),
         dob: document.getElementById('registerDob').value,
         phone: document.getElementById('registerPhone').value.trim(),
         gender: document.getElementById('registerGender').value
     };
     
-    // Validation
+    // Validation 
     if (!data.full_name || !data.email || !data.username || !data.password || 
         !data.dob || !data.phone || !data.gender) {
         alert('Vui lòng điền đầy đủ thông tin!');
@@ -745,6 +740,260 @@ function register(event) {
         alert('Không thể kết nối đến server');
     });
 }
+
+// Notification functions
+let notifications = [];
+let unreadCount = 0;
+
+// Toggle notification menu
+function toggleNotificationMenu() {
+    const menu = document.getElementById('notificationMenu');
+    if (menu) {
+        menu.classList.toggle('show');
+        if (menu.classList.contains('show')) {
+            loadNotifications();
+        }
+    }
+}
+
+// Load notifications from server
+function loadNotifications() {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        console.log('No user ID found, skipping notification load');
+        return;
+    }
+
+    console.log('Loading notifications for user:', userId);
+
+    fetch(`http://localhost:5000/api/notifications/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log('Notifications loaded:', data);
+            if (Array.isArray(data)) {
+                notifications = data;
+                unreadCount = notifications.filter(n => !n.is_read).length;
+                console.log('Unread count:', unreadCount);
+                renderNotifications();
+                updateNotificationBadge();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+        });
+}
+
+// Render notifications in the menu
+function renderNotifications() {
+    const list = document.getElementById('notificationList');
+    if (!list) return;
+
+    if (notifications.length === 0) {
+        list.innerHTML = `
+            <div class="empty-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <p>Không có thông báo nào</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = notifications.map(notification => `
+        <div class="notification-item${notification.is_read ? ' read' : ''}" 
+             onclick="${!notification.is_read ? `markNotificationRead(${notification.notification_id})` : ''}">
+            ${!notification.is_read ? `
+                <div class="notification-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+            ` : `<div class="notification-icon"></div>`}
+            <div class="notification-content">
+                <div class="notification-text">${notification.content}</div>
+                <div class="notification-time">${formatNotificationTime(notification.created_at)}</div>
+                <div class="notification-actions">
+                    ${notification.is_read
+                        ? `<span class="notification-read-label">Đã đọc</span>`
+                        : `<button class="notification-action" onclick="event.stopPropagation(); markNotificationRead(${notification.notification_id})">
+                                <i class="fas fa-check"></i> Đánh dấu đã đọc
+                           </button>`
+                    }
+                    <button class="notification-action delete" onclick="event.stopPropagation(); deleteNotification(${notification.notification_id})">
+                        <i class="fas fa-trash"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update notification badge
+function updateNotificationBadge() {
+    const badge = document.getElementById('notificationBadge');
+    console.log('Updating notification badge, unread count:', unreadCount);
+    if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        console.log('Badge updated successfully');
+    } else {
+        console.log('Notification badge element not found');
+    }
+}
+
+// Mark notification as read
+function markNotificationRead(notificationId) {
+    fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+        method: 'PUT'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const notification = notifications.find(n => n.notification_id === notificationId);
+            if (notification && !notification.is_read) {
+                notification.is_read = true;
+                unreadCount--;
+                renderNotifications();
+                updateNotificationBadge();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error marking notification as read:', error);
+    });
+}
+
+// Mark all notifications as read
+function markAllNotificationsRead() {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) return;
+
+    fetch(`http://localhost:5000/api/notifications/${userId}/read-all`, {
+        method: 'PUT'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            notifications.forEach(n => n.is_read = true);
+            unreadCount = 0;
+            renderNotifications();
+            updateNotificationBadge();
+        }
+    })
+    .catch(error => {
+        console.error('Error marking all notifications as read:', error);
+    });
+}
+
+// Delete notification
+function deleteNotification(notificationId) {
+    if (!confirm('Bạn có chắc muốn xóa thông báo này?')) return;
+
+    fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+        method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const index = notifications.findIndex(n => n.notification_id === notificationId);
+            if (index > -1) {
+                if (!notifications[index].is_read) {
+                    unreadCount--;
+                }
+                notifications.splice(index, 1);
+                renderNotifications();
+                updateNotificationBadge();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting notification:', error);
+    });
+}
+
+// Format notification time
+function formatNotificationTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'Vừa xong';
+    if (minutes < 60) return `${minutes} phút trước`;
+    if (hours < 24) return `${hours} giờ trước`;
+    if (days < 7) return `${days} ngày trước`;
+    
+    return date.toLocaleDateString('vi-VN');
+}
+
+// Create notification (for testing)
+function createNotification(userId, content) {
+    fetch('http://localhost:5000/api/notifications', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ user_id: userId, content: content })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            loadNotifications();
+        }
+    })
+    .catch(error => {
+        console.error('Error creating notification:', error);
+    });
+}
+
+// kiểm tra thông báo
+function testNotification() {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        alert('Bạn cần đăng nhập để test thông báo!');
+        return;
+    }
+    
+    const testMessages = [
+        'Đây là thông báo test từ hệ thống!',
+        'Bạn có tác vụ mới cần xử lý.',
+        'Deadline của tác vụ sắp đến hạn.',
+        'Có cập nhật mới về dự án của bạn.'
+    ];
+    
+    const randomMessage = testMessages[Math.floor(Math.random() * testMessages.length)];
+    createNotification(userId, randomMessage);
+}
+
+// Check notification elements
+function checkNotificationElements() {
+    const notificationBtn = document.querySelector('.notification-btn');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const notificationMenu = document.getElementById('notificationMenu');
+    
+    console.log('=== Notification Elements Check ===');
+    console.log('Notification button:', notificationBtn);
+    console.log('Notification badge:', notificationBadge);
+    console.log('Notification menu:', notificationMenu);
+    
+    if (notificationBtn) {
+        console.log('Notification button styles:', window.getComputedStyle(notificationBtn));
+    }
+    
+    return {
+        button: !!notificationBtn,
+        badge: !!notificationBadge,
+        menu: !!notificationMenu
+    };
+}
+
+// Close notification menu when clicking outside
+document.addEventListener('click', function(event) {
+    const notificationDropdown = document.querySelector('.notification-dropdown');
+    const notificationMenu = document.getElementById('notificationMenu');
+    
+    if (notificationDropdown && notificationMenu && !notificationDropdown.contains(event.target)) {
+        notificationMenu.classList.remove('show');
+    }
+});
 
 // Khởi tạo ứng dụng
 window.onload = function() {
@@ -783,6 +1032,12 @@ window.onload = function() {
             fetchUsers();
             fetchTasks();
             setupTaskForm();
+            loadNotifications(); // Load notifications
+            
+            // Kiểm tra notification elements
+            setTimeout(() => {
+                checkNotificationElements();
+            }, 500);
         }, 100);
         
         // Hiển thị thông tin user

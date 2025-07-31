@@ -494,3 +494,64 @@
         justify-content: space-between;
     }
 }
+
+/* --- User Management Page Styles --- */
+.user-form {
+    max-width: 700px;
+    margin: 0 auto 2rem auto;
+    transition: box-shadow 0.3s, transform 0.3s;
+    animation: popIn 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+}
+.user-form:focus-within {
+    box-shadow: 0 8px 32px rgba(102,126,234,0.18);
+    transform: scale(1.01);
+}
+.data-table {
+    min-width: 900px;
+    font-size: 1.08rem;
+    transition: box-shadow 0.3s;
+}
+.data-table tr {
+    transition: background 0.25s, box-shadow 0.25s;
+}
+.data-table tr:hover {
+    background: #f0f4ff;
+    box-shadow: 0 2px 12px #e0e7ff;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #764ba2;
+    box-shadow: 0 0 0 2px #e0e7ff;
+}
+.btn-primary, .btn-secondary, .btn-refresh {
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-primary:hover, .btn-secondary:hover, .btn-refresh:hover {
+    box-shadow: 0 6px 18px rgba(102,126,234,0.18);
+    transform: translateY(-2px) scale(1.04);
+}
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.95) translateY(30px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.notification-item.read {
+    background: #e6f9ec !important; /* xanh nhạt */
+    opacity: 1;
+}
+
+.notification-item.read .notification-read-label {
+    color: #219653; 
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.notification-item.read .notification-icon {
+    display: none;
+}
