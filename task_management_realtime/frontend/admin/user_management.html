@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Người Dùng - Admin</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script>
+        (function() {
+            const userRole = localStorage.getItem('user_role');
+            if (!userRole || userRole !== 'admin') {
+                alert('Bạn không có quyền truy cập trang admin!');
+                window.location.href = userRole === 'member' ? '/frontend/member/index.html' : '/frontend/index.html';
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div id="layout-header"></div>
+    <div id="layout-sidebar"></div>
+    <div class="admin-container">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-users-cog"></i> Quản Lý Người Dùng</h1>
+                <p>Thêm, sửa, xóa và tìm kiếm người dùng hệ thống</p>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div class="content-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-plus"></i> Thêm/Sửa Người Dùng</h2>
+                </div>
+                <form id="userForm" class="user-form" style="box-shadow:0 4px 24px rgba(102,126,234,0.10); border-radius:16px; background:#f4f7fa; margin-bottom:2rem;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="username"><i class="fas fa-user"></i> Tên đăng nhập</label>
+                            <input type="text" id="username" placeholder="Nhập tên đăng nhập" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="email" placeholder="Nhập email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role"><i class="fas fa-user-tag"></i> Vai trò</label>
+                            <select id="role" required>
+                                <option value="">Chọn vai trò</option>
+                                <option value="admin">Admin</option>
+                                <option value="member">Member</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="password"><i class="fas fa-lock"></i> Mật khẩu</label>
+                            <input type="password" id="password" placeholder="Nhập mật khẩu" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="full_name"><i class="fas fa-id-card"></i> Họ và tên</label>
+                            <input type="text" id="full_name" placeholder="Nhập họ và tên" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dob"><i class="fas fa-calendar"></i> Ngày sinh</label>
+                            <input type="date" id="dob" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone"><i class="fas fa-phone"></i> Số điện thoại</label>
+                            <input type="text" id="phone" placeholder="Nhập số điện thoại" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender"><i class="fas fa-venus-mars"></i> Giới tính</label>
+                            <select id="gender" required>
+                                <option value="">Chọn giới tính</option>
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Lưu
+                        </button>
+                        <button type="reset" class="btn-secondary">
+                            <i class="fas fa-undo"></i> Làm Mới
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="content-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> Danh Sách Người Dùng</h2>
+                    <div class="card-actions">
+                        <input type="text" id="searchUser" placeholder="Tìm kiếm người dùng..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid #ccc;">
+                        <button onclick="fetchUsersDropdown()" class="btn-refresh">
+                            <i class="fas fa-sync-alt"></i> Làm mới
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="usersTable" class="data-table" style="border-radius:14px; overflow:hidden; box-shadow:0 2px 16px rgba(102,126,234,0.08);">
+                        <thead style="background:linear-gradient(90deg,#667eea 60%,#764ba2 100%); color:white;">
+                            <tr>
+                                <th><i class="fas fa-user"></i> </th>
+                                <th><i class="fas fa-user"></i> Tên đăng nhập</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-user-tag"></i> Vai trò</th>
+                                <th><i class="fas fa-cogs"></i> Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Người dùng sẽ được tải về ở đây -->
+                            <!-- <tr>
+                                <td><div style="width:40px;height:40px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#667eea;"><i class="fas fa-user"></i></div></td>
+                                <td>admin</td>
+                                <td>admin@email.com</td>
+                                <td><span style="background:#e3f2fd;color:#1976d2;padding:4px 12px;border-radius:12px;font-weight:500;">Admin</span></td>
+                                <td>
+                                    <button title="Sửa" style="background:#fff;border:none;border-radius:50%;width:36px;height:36px;box-shadow:0 2px 8px #e0e7ff;cursor:pointer;margin-right:6px;"><i class="fas fa-edit" style="color:#667eea;"></i></button>
+                                    <button title="Xóa" style="background:#fff;border:none;border-radius:50%;width:36px;height:36px;box-shadow:0 2px 8px #ffeaea;cursor:pointer;"><i class="fas fa-trash" style="color:#e74c3c;"></i></button>
+                                </td>
+                            </tr> -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let editingUserId = null;
+
+        async function loadLayout() {
+            const response = await fetch('layout.html');
+            const layoutText = await response.text();
+            const temp = document.createElement('div');
+            temp.innerHTML = layoutText;
+            const nav = temp.querySelector('.top-navbar');
+            if (nav) document.getElementById('layout-header').appendChild(nav);
+            const sidebar = temp.querySelector('.sidebar');
+            if (sidebar) document.getElementById('layout-sidebar').appendChild(sidebar);
+            const username = localStorage.getItem('username') || 'Admin';
+            const navUsername = document.getElementById('navUsername');
+            const menuUsername = document.getElementById('menuUsername');
+            const sidebarUsername = document.getElementById('sidebarUsername');
+            if (navUsername) navUsername.textContent = username;
+            if (menuUsername) menuUsername.textContent = username;
+            if (sidebarUsername) sidebarUsername.textContent = username;
+        }
+        
+
+        // Lấy danh sách user
+        async function fetchUsersDropdown() {
+            const res = await fetch('http://localhost:5000/api/users');
+            const users = await res.json();
+            renderUsers(users);
+        }
+
+        // Hiển thị danh sách user
+        function renderUsers(users) {
+            const tbody = document.querySelector('#usersTable tbody');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="width:40px;height:40px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#667eea;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>
+                            <span style="background:#e3f2fd;color:#1976d2;padding:4px 12px;border-radius:12px;font-weight:500;">${user.role}</span>
+                        </td>
+                        <td>
+                            <button onclick="editUser(${user.user_id})" title="Sửa" style="background:#fff;border:none;border-radius:50%;width:36px;height:36px;box-shadow:0 2px 8px #e0e7ff;cursor:pointer;margin-right:6px;">
+                                <i class="fas fa-edit" style="color:#667eea;"></i>
+                            </button>
+                            <button onclick="deleteUser(${user.user_id})" title="Xóa" style="background:#fff;border:none;border-radius:50%;width:36px;height:36px;box-shadow:0 2px 8px #ffeaea;cursor:pointer;">
+                                <i class="fas fa-trash" style="color:#e74c3c;"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Thêm/sửa user
+        document.getElementById('userForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value,
+                email: document.getElementById('email').value.trim(),
+                role: document.getElementById('role').value,
+                full_name: document.getElementById('full_name').value.trim(),
+                dob: document.getElementById('dob').value,
+                phone: document.getElementById('phone').value.trim(),
+                gender: document.getElementById('gender').value,
+                admin_id: localStorage.getItem('user_id')
+            };
+            if (editingUserId) {
+                // Sửa user
+                const res = await fetch(`http://localhost:5000/api/users/${editingUserId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('Cập nhật user thành công!');
+                    fetchUsersDropdown();
+                    this.reset();
+                    editingUserId = null;
+                } else {
+                    alert(result.error || 'Có lỗi xảy ra!');
+                }
+            } else {
+                // Thêm user
+                const res = await fetch('http://localhost:5000/api/users', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('Thêm user thành công!');
+                    fetchUsersDropdown();
+                    this.reset();
+                } else {
+                    alert(result.error || 'Có lỗi xảy ra!');
+                }
+            }
+        };
+
+        // Sửa user
+        window.editUser = async function(userId) {
+            editingUserId = userId;
+            const res = await fetch(`http://localhost:5000/api/users/${userId}`);
+            const user = await res.json();
+            document.getElementById('username').value = user.username;
+            document.getElementById('email').value = user.email;
+            document.getElementById('role').value = user.role;
+            document.getElementById('password').value = ''; // Không hiển thị mật khẩu cũ
+            document.getElementById('full_name').value = user.full_name;
+            // Chuyển đổi ngày sinh về yyyy-MM-dd
+            if (user.dob) {
+                const date = new Date(user.dob);
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                document.getElementById('dob').value = `${yyyy}-${mm}-${dd}`;
+            } else {
+                document.getElementById('dob').value = '';
+            }
+            document.getElementById('phone').value = user.phone;
+            document.getElementById('gender').value = user.gender;
+        };
+
+        // Xóa user
+        window.deleteUser = async function(userId) {
+            if (!confirm('Bạn có chắc muốn xóa user này?')) return;
+            const res = await fetch(`http://localhost:5000/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({admin_id: localStorage.getItem('user_id')})
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert('Xóa user thành công!');
+                fetchUsersDropdown();
+            } else {
+                alert(result.error || 'Có lỗi xảy ra!');
+            }
+        };
+
+        // Làm mới form
+        document.getElementById('userForm').onreset = function() {
+            editingUserId = null;
+        };
+
+        // Tìm kiếm user
+        document.getElementById('searchUser').oninput = function() {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(keyword) ? '' : 'none';
+            });
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLayout();
+            fetchUsersDropdown();
+        });
+    </script>
+    <script src="../app.js"></script>
+</body>
+</html>

@@ -121,24 +121,51 @@
     <script>
     // Hàm load layout.html và chèn layout vào các div tương ứng
     async function loadLayout() {
-        const response = await fetch('layout.html');
-        const layoutText = await response.text();
-        const temp = document.createElement('div');
-        temp.innerHTML = layoutText;
-        // Chèn nav.top-navbar vào #layout-header
-        const nav = temp.querySelector('.top-navbar');
-        if (nav) document.getElementById('layout-header').appendChild(nav);
-        // Chèn div.sidebar vào #layout-sidebar
-        const sidebar = temp.querySelector('.sidebar');
-        if (sidebar) document.getElementById('layout-sidebar').appendChild(sidebar);
-        // Cập nhật tên người dùng nếu có
-        const username = localStorage.getItem('username') || 'Member';
-        const navUsername = document.getElementById('navUsername');
-        const menuUsername = document.getElementById('menuUsername');
-        const sidebarUsername = document.getElementById('sidebarUsername');
-        if (navUsername) navUsername.textContent = username;
-        if (menuUsername) menuUsername.textContent = username;
-        if (sidebarUsername) sidebarUsername.textContent = username;
+        try {
+            const response = await fetch('layout.html');
+            const layoutText = await response.text();
+            const temp = document.createElement('div');
+            temp.innerHTML = layoutText;
+            
+            // Chèn nav.top-navbar vào #layout-header
+            const nav = temp.querySelector('.top-navbar');
+            if (nav) {
+                document.getElementById('layout-header').appendChild(nav);
+                console.log('Nav loaded successfully');
+            }
+            
+            // Chèn div.sidebar vào #layout-sidebar
+            const sidebar = temp.querySelector('.sidebar');
+            if (sidebar) {
+                document.getElementById('layout-sidebar').appendChild(sidebar);
+                console.log('Sidebar loaded successfully');
+            }
+            
+            // Cập nhật tên người dùng nếu có
+            const username = localStorage.getItem('username') || 'Member';
+            const navUsername = document.getElementById('navUsername');
+            const menuUsername = document.getElementById('menuUsername');
+            const sidebarUsername = document.getElementById('sidebarUsername');
+            if (navUsername) navUsername.textContent = username;
+            if (menuUsername) menuUsername.textContent = username;
+            if (sidebarUsername) sidebarUsername.textContent = username;
+            
+            // Kiểm tra notification elements
+            const notificationBtn = document.querySelector('.notification-btn');
+            const notificationBadge = document.getElementById('notificationBadge');
+            if (notificationBtn) {
+                console.log('Notification button found');
+            } else {
+                console.log('Notification button NOT found');
+            }
+            if (notificationBadge) {
+                console.log('Notification badge found');
+            } else {
+                console.log('Notification badge NOT found');
+            }
+        } catch (error) {
+            console.error('Error loading layout:', error);
+        }
     }
     window.addEventListener('DOMContentLoaded', loadLayout);
     </script>

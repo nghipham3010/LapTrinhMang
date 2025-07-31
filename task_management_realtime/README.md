@@ -1,166 +1,58 @@
-# Hệ Thống Quản Lý Tác Vụ Thời Gian Thực
+# Task Management System - Hệ thống Quản lý Tác vụ
 
 ## Mô tả
-Hệ thống quản lý tác vụ với tính năng realtime, hỗ trợ phân quyền admin và member, với giao diện hiện đại và bảo mật cao.
+Hệ thống quản lý tác vụ realtime với giao diện web hiện đại, hỗ trợ đa người dùng và thông báo realtime.
 
 ## Tính năng chính
 
-### 🔐 Xác thực và Phân quyền
-- **Đăng ký tài khoản**: Form đăng ký với validation đầy đủ
-- **Đăng nhập**: Xác thực người dùng với phân quyền admin/member
-- **Phân quyền truy cập**: 
-  - **Kiểm tra URL**: Ngăn chặn truy cập trái phép bằng cách thay đổi URL
-  - **Script bảo vệ**: Kiểm tra quyền ngay khi trang load
-  - **Redirect tự động**: Chuyển hướng về đúng trang theo quyền
-- **Đăng xuất**: Xóa session và chuyển về trang chủ
+### Cho Admin:
+- **Dashboard**: Xem tổng quan hệ thống
+- **Quản lý Tác vụ**: 
+  - Thêm tác vụ mới
+  - Chỉnh sửa tác vụ
+  - Xóa tác vụ
+  - Lọc tác vụ theo trạng thái, người thực hiện
+  - Tìm kiếm tác vụ theo tiêu đề
+  - Xem danh sách tất cả tác vụ
+- **Quản lý Người dùng**: Thêm, sửa, xóa người dùng
+- **Thông báo**: Nhận thông báo realtime khi có thay đổi
+- **Hồ sơ**: Quản lý thông tin cá nhân
 
-### 🎨 Giao diện hiện đại (Layout Roblox)
-- **Top Navigation Bar**: Thanh điều hướng ngang cố định ở đầu trang
-  - **Brand Logo**: Logo với icon và tên hệ thống
-  - **Menu Items**: Dashboard, Tác vụ, Người dùng (chỉ admin)
-  - **User Dropdown**: Ở góc phải với thông tin user và menu đăng xuất
-- **Sidebar Navigation**: Thanh điều hướng dọc bên trái
-  - **User Profile**: Hiển thị avatar và thông tin user
-  - **Navigation Links**: Menu items với icons
-  - **Collapsible**: Có thể thu gọn sidebar
-  - **Role-based**: Hiển thị menu khác nhau cho admin/member
-- **User Dropdown Features**:
-  - **Hover dropdown**: Hiển thị khi hover vào user button
-  - **User info**: Avatar lớn, username, role
-  - **Menu items**: Hồ sơ, Cài đặt, Đăng xuất
-  - **Visual feedback**: Hover effects và animations
-- **Responsive Design**: Tương thích mobile và desktop
+### Cho Member:
+- Xem danh sách tác vụ được giao
+- Cập nhật trạng thái tác vụ
+- Nhận thông báo khi có tác vụ mới
+- Quản lý hồ sơ cá nhân
 
-### 📋 Quản lý tác vụ
-- **Tạo tác vụ** (chỉ Admin): Giao tác vụ cho member
-- **Xem danh sách tác vụ**: Hiển thị tất cả tác vụ với thông tin chi tiết
-- **Cập nhật trạng thái**: Chuyển đổi giữa pending/done
-- **Phân quyền cập nhật**: 
-  - Admin: Cập nhật tất cả tác vụ
-  - Member: Chỉ cập nhật tác vụ được giao
-- **Filter tác vụ**: Lọc theo trạng thái
-- **Time management**: Hiển thị thời gian còn lại với màu sắc cảnh báo
+## Cấu trúc dự án
 
-### ⚡ Realtime
-- **WebSocket**: Cập nhật realtime khi có thay đổi tác vụ
-- **Thông báo**: Alert khi có cập nhật từ server
-
-### 📊 Thống kê Dashboard
-- **Admin Dashboard**:
-  - Tổng số tác vụ
-  - Tác vụ đang chờ
-  - Tác vụ hoàn thành
-  - Tổng số người dùng
-- **Member Dashboard**:
-  - Tác vụ của tôi
-  - Tác vụ đang chờ
-  - Tác vụ hoàn thành
-  - Tác vụ quá hạn
-  - Tác vụ cần hoàn thành hôm nay
-
-## Cải thiện bảo mật đã thực hiện
-
-### 1. **Phân quyền URL**
-- Kiểm tra quyền truy cập ngay khi trang load
-- Script bảo vệ trong HTML head
-- Redirect tự động về đúng trang theo quyền
-- Ngăn chặn truy cập trái phép bằng cách thay đổi URL
-
-### 2. **Session Management**
-- Kiểm tra session trước khi thực hiện actions
-- Validation dữ liệu đầu vào
-- Phân quyền API calls
-
-### 3. **Frontend Security**
-- Kiểm tra quyền truy cập ở nhiều layer
-- Validation form đầy đủ
-- Error handling tốt hơn
-
-## Cải thiện UI/UX (Layout Roblox)
-
-### 1. **Top Navigation Bar**
-- Fixed navigation với dark theme (#2c3e50)
-- Brand logo với icon và gradient color
-- Menu items với hover effects
-- User dropdown ở góc phải với avatar và thông tin
-
-### 2. **Sidebar Navigation**
-- Fixed sidebar với dark theme (#34495e)
-- User profile section với avatar và thông tin
-- Navigation links với icons và active states
-- Collapsible functionality
-- Footer với toggle button
-
-### 3. **User Dropdown**
-- Large avatar và user details
-- Menu items với icons
-- Divider line
-- Logout button với red color
-- Smooth animations và transitions
-
-### 4. **Dashboard Design**
-- Stats cards với icons và màu sắc
-- Welcome message cho member
-- Filter và search functionality
-- Time remaining với color coding
-
-### 5. **Interactive Elements**
-- Hover effects và animations
-- Confirm dialogs
-- Loading states
-- Empty states
-- Smooth transitions
-
-## Database Operations
-
-### ✅ Tất cả thao tác đều được lưu vào database:
-
-#### **Admin Operations:**
-- ✅ **Tạo tác vụ** → Lưu vào bảng `Tasks`
-- ✅ **Cập nhật trạng thái** → Lưu vào `Tasks` và `TaskHistory`
-- ✅ **Xem danh sách users** → Đọc từ bảng `Users`
-- ✅ **Xem thống kê** → Đọc từ `Tasks` và `Users`
-
-#### **Member Operations:**
-- ✅ **Cập nhật trạng thái tác vụ** → Lưu vào `Tasks` và `TaskHistory`
-- ✅ **Xem tác vụ được giao** → Đọc từ bảng `Tasks`
-- ✅ **Xem thống kê cá nhân** → Đọc từ `Tasks`
-
-#### **Authentication:**
-- ✅ **Đăng ký** → Lưu vào bảng `Users`
-- ✅ **Đăng nhập** → Kiểm tra từ bảng `Users`
-- ✅ **Session management** → Sử dụng localStorage
-
-## Cấu trúc thư mục
 ```
 task_management_realtime/
 ├── backend/
-│   ├── app.py              # Flask API server
-│   ├── models.py           # Data models
-│   ├── db.py              # Database connection
-│   ├── websocket_manager.py # WebSocket handling
-│   ├── utils.py           # Utility functions
-│   ├── create_db.sql      # Database schema
-│   └── requirements.txt   # Python dependencies
+│   ├── app.py              # API server chính
+│   ├── db.py               # Kết nối database
+│   ├── models.py           # Định nghĩa models
+│   ├── websocket_manager.py # Quản lý WebSocket
+│   ├── utils.py            # Tiện ích
+│   ├── requirements.txt    # Dependencies
+│   └── create_db.sql       # Script tạo database
 ├── frontend/
-│   ├── index.html         # Welcome page
-│   ├── app.js            # Main JavaScript logic
-│   ├── style.css         # Global styles
-│   ├── auth/
-│   │   ├── login.html    # Login page
-│   │   └── register.html # Register page
-│   ├── admin/
-│   │   ├── index.html    # Admin dashboard
-│   │   └── style.css     # Admin styles
-│   └── member/
-│       ├── index.html    # Member dashboard
-│       └── style.css     # Member styles
+│   ├── admin/              # Giao diện admin
+│   │   ├── index.html      # Dashboard
+│   │   ├── tasks.html      # Quản lý tác vụ
+│   │   ├── user_management.html # Quản lý người dùng
+│   │   ├── profile.html    # Hồ sơ
+│   │   ├── layout.html     # Layout chung
+│   │   └── style.css       # CSS chung
+│   ├── member/             # Giao diện member
+│   ├── auth/               # Đăng nhập/đăng ký
+│   └── index.html          # Trang chủ
 └── README.md
 ```
 
 ## Cài đặt và chạy
 
-### Backend
+### Backend (Python Flask)
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -168,51 +60,102 @@ python app.py
 ```
 
 ### Frontend
-Mở file `frontend/index.html` trong trình duyệt hoặc sử dụng live server.
+Mở file `frontend/admin/index.html` hoặc `frontend/member/index.html` trong trình duyệt.
 
 ## API Endpoints
 
+### Tác vụ
 - `GET /api/tasks` - Lấy danh sách tác vụ
-- `POST /api/tasks` - Tạo tác vụ mới (Admin only)
-- `PUT /api/tasks/<id>` - Cập nhật trạng thái tác vụ
+- `POST /api/tasks` - Thêm tác vụ mới (admin)
+- `PUT /api/tasks/<id>` - Cập nhật tác vụ
+- `DELETE /api/tasks/<id>` - Xóa tác vụ (admin)
+
+### Người dùng
 - `GET /api/users` - Lấy danh sách người dùng
+- `POST /api/users` - Thêm người dùng (admin)
+- `PUT /api/users/<id>` - Cập nhật người dùng (admin)
+- `DELETE /api/users/<id>` - Xóa người dùng (admin)
+
+### Xác thực
 - `POST /api/login` - Đăng nhập
 - `POST /api/register` - Đăng ký
 
+### Thông báo
+- `GET /api/notifications/<user_id>` - Lấy thông báo
+- `PUT /api/notifications/<id>/read` - Đánh dấu đã đọc
+- `PUT /api/notifications/<user_id>/read-all` - Đánh dấu tất cả đã đọc
+
+## Tính năng mới: Quản lý Tác vụ
+
+### Chức năng chính:
+1. **Thêm tác vụ mới**: Admin có thể tạo tác vụ và giao cho member
+2. **Chỉnh sửa tác vụ**: Cập nhật thông tin tác vụ
+3. **Xóa tác vụ**: Xóa tác vụ khỏi hệ thống
+4. **Lọc và tìm kiếm**:
+   - Lọc theo trạng thái (Chờ xử lý, Đang thực hiện, Hoàn thành)
+   - Lọc theo người thực hiện
+   - Tìm kiếm theo tiêu đề tác vụ
+5. **Hiển thị thông tin**:
+   - Tiêu đề và mô tả tác vụ
+   - Trạng thái với màu sắc phân biệt
+   - Người được giao tác vụ
+   - Hạn chót và ngày tạo
+
+### Giao diện:
+- Layout responsive với sidebar
+- Modal form cho thêm/sửa tác vụ
+- Card layout cho danh sách tác vụ
+- Thông báo realtime khi có thay đổi
+
 ## Database Schema
 
-### Users
-- id, username, password, role, full_name, email, dob, phone, gender
+### Bảng Tasks
+- task_id (Primary Key)
+- title (Tiêu đề tác vụ)
+- description (Mô tả)
+- status (Trạng thái)
+- deadline (Hạn chót)
+- assigned_to (Người được giao)
+- created_at (Ngày tạo)
 
-### Tasks  
-- id, title, description, status, deadline, assigned_to
+### Bảng Users
+- user_id (Primary Key)
+- username (Tên đăng nhập)
+- password (Mật khẩu)
+- role (Vai trò: admin/member)
+- full_name, email, phone, etc.
 
-### TaskHistory
-- id, task_id, changed_by, old_status, new_status, changed_at
+### Bảng Notifications
+- notification_id (Primary Key)
+- user_id (Người nhận)
+- content (Nội dung thông báo)
+- is_read (Đã đọc chưa)
+- created_at (Thời gian tạo)
 
-## Tính năng bảo mật
+## Công nghệ sử dụng
 
-### ✅ Đã triển khai
-- [x] Phân quyền URL access
-- [x] Session validation
-- [x] Role-based access control
-- [x] Input validation
-- [x] Error handling
-- [x] Secure redirects
+### Backend:
+- Python Flask
+- SQL Server (SSMS)
+- Flask-SocketIO (WebSocket)
+- Flask-CORS
 
-### 🔄 Cần cải thiện
-- [ ] JWT authentication
-- [ ] Password hashing
-- [ ] CSRF protection
-- [ ] Rate limiting
-- [ ] HTTPS enforcement
+### Frontend:
+- HTML5, CSS3, JavaScript
+- Font Awesome (Icons)
+- Socket.IO Client
+- Responsive Design
 
-## Tính năng tương lai
+## Hướng dẫn sử dụng
 
-- [ ] Email notifications
-- [ ] File attachments
-- [ ] Task comments
-- [ ] Dashboard analytics
-- [ ] Export reports
-- [ ] Mobile app
-- [ ] Push notifications 
+1. **Đăng nhập**: Sử dụng tài khoản admin để truy cập quản lý tác vụ
+2. **Tạo tác vụ**: Click "Thêm Tác vụ" và điền thông tin
+3. **Quản lý tác vụ**: Sử dụng các nút Sửa/Xóa trên từng tác vụ
+4. **Lọc tác vụ**: Sử dụng các bộ lọc ở đầu trang
+5. **Tìm kiếm**: Nhập từ khóa vào ô tìm kiếm
+
+## Lưu ý
+- Chỉ admin có quyền thêm, sửa, xóa tác vụ
+- Member chỉ có thể cập nhật trạng thái tác vụ được giao
+- Hệ thống tự động gửi thông báo khi có thay đổi
+- Dữ liệu được lưu trữ trong SQL Server 

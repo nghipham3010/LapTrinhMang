@@ -15,6 +15,24 @@
             </a>
         </div>
         <div class="nav-user">
+            <!-- Thêm notification bell -->
+            <div class="notification-dropdown">
+                <button class="notification-btn" onclick="toggleNotificationMenu()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <div class="notification-menu" id="notificationMenu">
+                    <div class="notification-header">
+                        <h3>Thông báo</h3>
+                        <button onclick="markAllNotificationsRead()" class="mark-all-read">
+                            <i class="fas fa-check-double"></i> Đánh dấu tất cả đã đọc
+                        </button>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <!-- Thông báo sẽ được tải ở đây -->
+                    </div>
+                </div>
+            </div>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleUserMenu()">
                     <div class="user-avatar">
@@ -37,7 +55,7 @@
                         </div>
                     </div>
                     <div class="user-actions">
-                        <a href="#" onclick="showProfile()" class="menu-item">
+                        <a href="profile.html" onclick="showProfile()" class="menu-item">
                             <i class="fas fa-user-edit"></i>
                             <span>Hồ sơ</span>
                         </a>

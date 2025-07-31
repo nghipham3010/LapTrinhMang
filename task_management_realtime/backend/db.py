@@ -8,3 +8,4 @@ def get_connection():
         'Trusted_Connection=yes;'
     )
     return conn 
+

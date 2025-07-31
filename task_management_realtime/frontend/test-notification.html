@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notification</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="top-navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-tasks"></i>
+                <span>Task Management</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-user">
+                <!-- Notification bell -->
+                <div class="notification-dropdown">
+                    <button class="notification-btn" onclick="toggleNotificationMenu()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">3</span>
+                    </button>
+                    <div class="notification-menu" id="notificationMenu">
+                        <div class="notification-header">
+                            <h3>Thông báo</h3>
+                            <button onclick="markAllNotificationsRead()" class="mark-all-read">
+                                <i class="fas fa-check-double"></i> Đánh dấu tất cả đã đọc
+                            </button>
+                        </div>
+                        <div class="notification-list" id="notificationList">
+                            <div class="notification-item unread">
+                                <div class="notification-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-text">Test notification 1</div>
+                                    <div class="notification-time">5 phút trước</div>
+                                </div>
+                            </div>
+                            <div class="notification-item unread">
+                                <div class="notification-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-text">Test notification 2</div>
+                                    <div class="notification-time">10 phút trước</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- User dropdown -->
+                <div class="user-dropdown">
+                    <button class="user-btn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="username">Test User</span>
+                            <span class="user-role">Member</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div style="padding: 50px; text-align: center;">
+        <h1>Test Notification</h1>
+        <p>Click vào icon chuông để test notification</p>
+        <button onclick="testToggle()" style="padding: 10px 20px; margin: 10px;">
+            Toggle Notification Menu
+        </button>
+        <button onclick="checkElements()" style="padding: 10px 20px; margin: 10px;">
+            Check Elements
+        </button>
+    </div>
+
+    <script>
+        function toggleNotificationMenu() {
+            const menu = document.getElementById('notificationMenu');
+            if (menu) {
+                menu.classList.toggle('show');
+                console.log('Menu toggled, show class:', menu.classList.contains('show'));
+            }
+        }
+
+        function testToggle() {
+            toggleNotificationMenu();
+        }
+
+        function checkElements() {
+            const notificationBtn = document.querySelector('.notification-btn');
+            const notificationBadge = document.getElementById('notificationBadge');
+            const notificationMenu = document.getElementById('notificationMenu');
+            
+            console.log('=== Test Elements ===');
+            console.log('Button:', notificationBtn);
+            console.log('Badge:', notificationBadge);
+            console.log('Menu:', notificationMenu);
+            
+            if (notificationBtn) {
+                const styles = window.getComputedStyle(notificationBtn);
+                console.log('Button display:', styles.display);
+                console.log('Button visibility:', styles.visibility);
+                console.log('Button color:', styles.color);
+            }
+        }
+
+        // Auto check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkElements, 100);
+        });
+    </script>
+</body>
+</html> 
